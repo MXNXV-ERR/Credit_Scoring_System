@@ -3,6 +3,15 @@ from sklearn.preprocessing import StandardScaler
 import numpy as np
 import streamlit as st
 
+st.set_page_config(page_title="Team NishJay",page_icon="logo.png")
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
 st.title("Credit Score Calc SyStem")
 
 @st.cache_resource
