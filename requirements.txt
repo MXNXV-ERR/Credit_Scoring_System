@@ -6,3 +6,5 @@ numpy
 seaborn
 matplotlib
 pandas
+firebase
+firebase_admin
