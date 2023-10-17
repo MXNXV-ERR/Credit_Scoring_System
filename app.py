@@ -11,6 +11,8 @@ st.set_page_config(page_title="Team NishJay",page_icon="logo.png", layout='wide'
                         'Get Help': None,
                         'About': '''
                         This app was made by **Team NishJay**
+
+
                         '''
      })
 
@@ -43,7 +45,9 @@ minimum_payment_default = 0
 st.title('Credit Score Analysis')
 st.caption('Made by Team NishJay')
 
-
+st.markdown('''
+On the left, there's a sidebar (click `>` if you don't see it). Where you can fill out a form  to see how each piece of information you provided impacts your credit score.
+            ''')
 
 profile = st.radio('Choose a profile:', options=['Jatin', 'Krishna', 'Mithun'], horizontal=True)
 if profile == 'Jatin':
