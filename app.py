@@ -5,6 +5,17 @@ import os
 from src import transform_resp
 import seaborn as sns
 import matplotlib.pyplot as plt
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate('firestore_key.json')
+
+    app = firebase_admin.initialize_app(cred)
+
+db = firestore.client()
+
 
 st.set_page_config(page_title="Team NishJay",page_icon="logo.png", layout='wide',
                    initial_sidebar_state='auto', menu_items={
@@ -89,6 +100,7 @@ elif profile == 'Mithun':
 
 with st.sidebar:
     st.header('Credit Score Form')
+    name = st.text_input(label="Name",placeholder="Your Name")
     age = st.slider('What is your age?', min_value=18, max_value=100, step=1, value=age_default)
     annual_income = st.number_input('What is your Annual Income?', min_value=0.00, max_value=300000.00, value=annual_income_default)
     accounts = st.number_input('How many bank accounts do you have?', min_value=0, max_value=20, step=1, value=accounts_default)
@@ -154,8 +166,12 @@ with col1:
             'missed_payment': missed_payment,
             'minimum_payment': minimum_payment
         }
+
+
         output = transform_resp(resp)
         output = pd.DataFrame(output, index=[0])
+        resp['name']=name
+        db.collection("CustData").add(resp)
         # output.loc[:,:] = scaler.transform(output)
 
         credit_score = model.predict(output)[0]
