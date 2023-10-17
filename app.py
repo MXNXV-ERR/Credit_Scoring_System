@@ -151,84 +151,94 @@ with col2:
 with col1:
 
     placeholder = st.empty()
+    if not name:
+            st.error("Please enter valid name")
+    else: 
+        if run:
+            resp = {
+                'age': age,
+                'annual_income': annual_income,
+                'accounts': accounts,
+                'credit_cards': credit_cards,
+                'delayed_payments': delayed_payments,
+                'credit_card_ratio': credit_card_ratio,
+                'emi_monthly': emi_monthly,
+                'credit_history': credit_history,
+                'loans': loans,
+                'missed_payment': missed_payment,
+                'minimum_payment': minimum_payment
+            }
 
-    if run:
-        resp = {
-            'age': age,
-            'annual_income': annual_income,
-            'accounts': accounts,
-            'credit_cards': credit_cards,
-            'delayed_payments': delayed_payments,
-            'credit_card_ratio': credit_card_ratio,
-            'emi_monthly': emi_monthly,
-            'credit_history': credit_history,
-            'loans': loans,
-            'missed_payment': missed_payment,
-            'minimum_payment': minimum_payment
-        }
 
+            output = transform_resp(resp)
+            output = pd.DataFrame(output, index=[0])
+            # output.loc[:,:] = scaler.transform(output)
 
-        output = transform_resp(resp)
-        output = pd.DataFrame(output, index=[0])
-        resp['name']=name
-        db.collection("CustData").add(resp)
-        # output.loc[:,:] = scaler.transform(output)
+            credit_score = model.predict(output)[0]
+            resp['name']=name
+            if credit_score == 2:
+                resp['credit_score']="Good"
+            elif credit_score == 1:
+                resp['credit_score']="Average"
+            else:
+                resp['credit_score']="Poor"
 
-        credit_score = model.predict(output)[0]
-        
-        if credit_score == 2:
-            st.balloons()
-            t1 = plt.Polygon([[5, 0.5], [5.5, 0], [4.5, 0]], color='black')
-            placeholder.markdown('Your credit score is **GOOD**! Congratulations!')
-            st.markdown('This credit score indicates that this person is likely to repay a loan, so the risk of giving them credit is low.')
-        elif credit_score == 1:
-            t1 = plt.Polygon([[3, 0.5], [3.5, 0], [2.5, 0]], color='black')
-            placeholder.markdown('Your credit score is **REGULAR**.')
-            st.markdown('This credit score indicates that this person is likely to repay a loan, but can occasionally miss some payments. Meaning that the risk of giving them credit is medium.')
-        elif credit_score == 0:
-            t1 = plt.Polygon([[1, 0.5], [1.5, 0], [0.5, 0]], color='black')
-            placeholder.markdown('Your credit score is **POOR**.')
-            st.markdown('This credit score indicates that this person is unlikely to repay a loan, so the risk of lending them credit is high.')
-        plt.gca().add_patch(t1)
-        figure.pyplot(f)
-        prob_fig, ax = plt.subplots()
+            
+            db.collection("CustData").add(resp)
+            
+            if credit_score == 2:
+                st.balloons()
+                t1 = plt.Polygon([[5, 0.5], [5.5, 0], [4.5, 0]], color='black')
+                placeholder.markdown('Your credit score is **GOOD**! Congratulations!')
+                st.markdown('This credit score indicates that this person is likely to repay a loan, so the risk of giving them credit is low.')
+            elif credit_score == 1:
+                t1 = plt.Polygon([[3, 0.5], [3.5, 0], [2.5, 0]], color='black')
+                placeholder.markdown('Your credit score is **REGULAR**.')
+                st.markdown('This credit score indicates that this person is likely to repay a loan, but can occasionally miss some payments. Meaning that the risk of giving them credit is medium.')
+            elif credit_score == 0:
+                t1 = plt.Polygon([[1, 0.5], [1.5, 0], [0.5, 0]], color='black')
+                placeholder.markdown('Your credit score is **POOR**.')
+                st.markdown('This credit score indicates that this person is unlikely to repay a loan, so the risk of lending them credit is high.')
+            plt.gca().add_patch(t1)
+            figure.pyplot(f)
+            prob_fig, ax = plt.subplots()
 
-        with st.expander('Click to see how certain the algorithm was'):
-            plt.pie(model.predict_proba(output)[0], labels=['Poor', 'Regular', 'Good'], autopct='%.0f%%')
-            st.pyplot(prob_fig)
-        
-        with st.expander('Click to see how much each feature weight'):
-            importance = model.feature_importances_
-            importance = pd.DataFrame(importance)
-            columns = pd.DataFrame(['Age', 'Annual_Income', 'Num_Bank_Accounts',
-                                    'Num_Credit_Card', 'Num_of_Delayed_Payment',
-                                    'Credit_Utilization_Ratio', 'Total_EMI_per_month',
-                                    'Credit_History_Age_Formated', 'Auto_Loan',
-                                    'Credit-Builder_Loan', 'Personal_Loan', 'Home_Equity_Loan',
-                                    'Mortgage_Loan', 'Student_Loan', 'Debt_Consolidation_Loan',
-                                    'Payday_Loan', 'Missed_Payment_Day', 'Payment_of_Min_Amount_Yes'])
+            with st.expander('Click to see how certain the algorithm was'):
+                plt.pie(model.predict_proba(output)[0], labels=['Poor', 'Regular', 'Good'], autopct='%.0f%%')
+                st.pyplot(prob_fig)
+            
+            with st.expander('Click to see how much each feature weight'):
+                importance = model.feature_importances_
+                importance = pd.DataFrame(importance)
+                columns = pd.DataFrame(['Age', 'Annual_Income', 'Num_Bank_Accounts',
+                                        'Num_Credit_Card', 'Num_of_Delayed_Payment',
+                                        'Credit_Utilization_Ratio', 'Total_EMI_per_month',
+                                        'Credit_History_Age_Formated', 'Auto_Loan',
+                                        'Credit-Builder_Loan', 'Personal_Loan', 'Home_Equity_Loan',
+                                        'Mortgage_Loan', 'Student_Loan', 'Debt_Consolidation_Loan',
+                                        'Payday_Loan', 'Missed_Payment_Day', 'Payment_of_Min_Amount_Yes'])
 
-            importance = pd.concat([importance, columns], axis=1)
-            importance.columns = ['importance', 'index']
-            importance_fig = round(importance.set_index('index')*100.00, 2)
-            loans = ['Auto_Loan', 'Credit-Builder_Loan', 'Personal_Loan', 
-                    'Home_Equity_Loan', 'Mortgage_Loan', 'Student_Loan',
-                    'Debt_Consolidation_Loan', 'Payday_Loan']
+                importance = pd.concat([importance, columns], axis=1)
+                importance.columns = ['importance', 'index']
+                importance_fig = round(importance.set_index('index')*100.00, 2)
+                loans = ['Auto_Loan', 'Credit-Builder_Loan', 'Personal_Loan', 
+                        'Home_Equity_Loan', 'Mortgage_Loan', 'Student_Loan',
+                        'Debt_Consolidation_Loan', 'Payday_Loan']
 
-            # summing the loans
-            Loans = importance_fig.loc[loans].sum().reset_index()
-            Loans['index'] = 'Loans'
-            Loans.columns=['index','importance']
-            importance_fig = importance_fig.drop(loans, axis=0).reset_index()
-            importance_fig = pd.concat([importance_fig, Loans], axis=0)
-            importance_fig.sort_values(by='importance', ascending=True, inplace=True)
+                # summing the loans
+                Loans = importance_fig.loc[loans].sum().reset_index()
+                Loans['index'] = 'Loans'
+                Loans.columns=['index','importance']
+                importance_fig = importance_fig.drop(loans, axis=0).reset_index()
+                importance_fig = pd.concat([importance_fig, Loans], axis=0)
+                importance_fig.sort_values(by='importance', ascending=True, inplace=True)
 
-            # plotting the figure
-            importance_figure, ax = plt.subplots()
-            bars = ax.barh('index', 'importance', data=importance_fig)
-            ax.bar_label(bars)
-            plt.ylabel('')
-            plt.xlabel('')
-            plt.xlim(0,20)
-            sns.despine(right=True, top=True)
-            st.pyplot(importance_figure)
+                # plotting the figure
+                importance_figure, ax = plt.subplots()
+                bars = ax.barh('index', 'importance', data=importance_fig)
+                ax.bar_label(bars)
+                plt.ylabel('')
+                plt.xlabel('')
+                plt.xlim(0,20)
+                sns.despine(right=True, top=True)
+                st.pyplot(importance_figure)
