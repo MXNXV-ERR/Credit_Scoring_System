@@ -1,3 +1,8 @@
-tensorflow
+# tensorflow
+xgboost
 scikit-learn
 numpy
+pickle
+seaborn
+matplotlib
+pandas
