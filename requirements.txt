@@ -1,8 +1,9 @@
 # tensorflow
+streamlit
 xgboost
 scikit-learn
 numpy
-pickle
+pickle5
 seaborn
 matplotlib
 pandas
