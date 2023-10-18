@@ -22,8 +22,6 @@ st.set_page_config(page_title="Team NishJay",page_icon="logo.png", layout='wide'
                         'Get Help': None,
                         'About': '''
                         This app was made by **Team NishJay**
-
-
                         '''
      })
 
